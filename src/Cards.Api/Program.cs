@@ -1,6 +1,9 @@
+using Cards.Api.Services;
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
+builder.Services.AddSingleton<ICardService, InMemoryCardService>();
 
 var app = builder.Build();
 
