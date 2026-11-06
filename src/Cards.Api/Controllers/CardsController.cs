@@ -17,4 +17,11 @@ public class CardsController(ICardService cards) : ControllerBase
         var card = cards.GetById(id);
         return card is null ? NotFound() : card;
     }
+
+    [HttpPost]
+    public ActionResult<Card> Create(CreateCardRequest request)
+    {
+        var card = cards.Create(request);
+        return CreatedAtAction(nameof(GetById), new { id = card.Id }, card);
+    }
 }

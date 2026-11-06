@@ -4,6 +4,8 @@ namespace Cards.Api.Services;
 
 public class InMemoryCardService : ICardService
 {
+    private int _nextId = 4;
+    
     private readonly Lock _lock = new();
     private readonly List<Card> _cards =
     [
@@ -20,5 +22,15 @@ public class InMemoryCardService : ICardService
     public Card? GetById(int id)
     {
         lock (_lock) return _cards.FirstOrDefault(c => c.Id == id);
+    }
+
+    public Card Create(CreateCardRequest request)
+    {
+        lock (_lock)
+        {
+            var card = new Card(_nextId++, request.Name, request.Type, request.Attack);
+            _cards.Add(card);
+            return card;
+        }
     }
 }

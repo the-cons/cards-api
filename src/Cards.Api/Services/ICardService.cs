@@ -6,4 +6,5 @@ public interface ICardService
 {
     IReadOnlyList<Card> GetAll();
     Card? GetById(int id);
+    Card Create(CreateCardRequest request);
 }
