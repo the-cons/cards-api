@@ -29,7 +29,7 @@ public class EfCardService(CardsDbContext db, IOptions<CardsOptions> options) : 
         
         var entity = new CardEntity() { Name = request.Name, 
             Type = request.Type,
-            Attack = request.Attack
+            Attack = request.Attack.Value
         };
         
         db.Cards.Add(entity);
