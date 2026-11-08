@@ -12,6 +12,8 @@ public class CardsApiTests : IDisposable
     private readonly HttpClient _user;
     private readonly HttpClient _admin;
     
+    private record MeResponse(string Name, bool IsAdmin);
+    
     public CardsApiTests()
     {
         _anonymous= _factory.CreateClient();
@@ -106,5 +108,29 @@ public class CardsApiTests : IDisposable
     {
         Assert.Equal(HttpStatusCode.NoContent, (await _admin.DeleteAsync("/api/cards/1")).StatusCode);
         Assert.Equal(HttpStatusCode.NotFound,  (await _admin.DeleteAsync("/api/cards/1")).StatusCode);
+    }
+
+    [Fact]
+    public async Task Create_when_anon_then_401()
+    {
+        var response = await _anonymous.PostAsJsonAsync("/api/cards", new CreateCardRequest("Some name once", "Normal", 100));
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Delete_when_user_returns_403()
+    {
+        var r = await _user.DeleteAsync("/api/cards/1");
+        Assert.Equal(HttpStatusCode.Forbidden, r.StatusCode);
+        Assert.Equal(HttpStatusCode.OK, (await _user.GetAsync("/api/cards/1")).StatusCode);
+    }
+    
+    [Fact]
+    public async Task Me_as_admin_returns_identity()
+    {
+        var me = await _admin.GetFromJsonAsync<MeResponse>("/api/me");
+
+        Assert.Equal("bob", me?.Name);
+        Assert.True(me?.IsAdmin);
     }
 }
