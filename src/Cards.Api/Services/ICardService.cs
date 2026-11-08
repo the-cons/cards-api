@@ -4,8 +4,8 @@ namespace Cards.Api.Services;
 
 public interface ICardService
 {
-    IReadOnlyList<Card> GetAll();
-    Card? GetById(int id);
-    Card? Create(CreateCardRequest request);
-    bool Delete(int id);
+    Task<IReadOnlyList<Card>> GetAllAsync(CancellationToken ct);
+    Task<Card?> GetByIdAsync(int id, CancellationToken ct);
+    Task<Card?> CreateAsync(CreateCardRequest request, CancellationToken ct);
+    Task<bool> DeleteAsync(int id, CancellationToken ct);
 }
