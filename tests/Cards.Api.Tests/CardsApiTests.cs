@@ -60,7 +60,7 @@ public class CardsApiTests : IDisposable
             Assert.Equal(HttpStatusCode.Created, fill.StatusCode);
         }
         
-        var response = await _client.PostAsJsonAsync("/api/cards", new CreateCardRequest($"One too many", "Normal", 100));
+        var response = await _client.PostAsJsonAsync("/api/cards", new CreateCardRequest("One too many", "Normal", 100));
         
         Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
         var problem = await response.Content.ReadFromJsonAsync<ProblemDetails>();
@@ -70,10 +70,10 @@ public class CardsApiTests : IDisposable
     [Fact]
     public async Task Create_when_name_present_returns_409()
     {
-        var responseA = await _client.PostAsJsonAsync("/api/cards", new CreateCardRequest($"Some name once", "Normal", 100));
+        var responseA = await _client.PostAsJsonAsync("/api/cards", new CreateCardRequest("Some name once", "Normal", 100));
         Assert.Equal(HttpStatusCode.Created, responseA.StatusCode);
         
-        var responseB = await _client.PostAsJsonAsync("/api/cards", new CreateCardRequest($"Some name once", "Normal", 100));
+        var responseB = await _client.PostAsJsonAsync("/api/cards", new CreateCardRequest("Some name once", "Normal", 100));
         Assert.Equal(HttpStatusCode.Conflict, responseB.StatusCode);
         var problem = await responseB.Content.ReadFromJsonAsync<ProblemDetails>();
         Assert.Equal("Card already exists", problem?.Title);

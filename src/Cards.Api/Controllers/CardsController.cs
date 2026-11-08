@@ -26,7 +26,7 @@ public class CardsController(ICardService cards) : ControllerBase
         return CreatedAtAction(nameof(GetById), new { id = card.Id }, card);
     }
 
-    [HttpDelete(("{id:int}"))]
+    [HttpDelete("{id:int}")]
     public async Task<ActionResult> Delete(int id, CancellationToken ct) => 
         await cards.DeleteAsync(id, ct) ? NoContent() : NotFound();
 }

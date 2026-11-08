@@ -2,6 +2,7 @@ using Cards.Api.Data;
 using Cards.Api.Domain;
 using Cards.Api.Models;
 using Cards.Api.Options;
+using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
@@ -40,7 +41,14 @@ public class EfCardService(CardsDbContext db, IOptions<CardsOptions> options) : 
         };
 
         db.Cards.Add(entity);
-        await db.SaveChangesAsync(ct);
+        try
+        {
+            await db.SaveChangesAsync(ct);
+        }
+        catch (DbUpdateException ex) when (ex.InnerException is SqliteException { SqliteErrorCode: 2067 })
+        {
+            throw new DuplicateCardException(request.Name);
+        }
 
         return new Card(entity.Id, entity.Name, entity.Type, entity.Attack);
     }
