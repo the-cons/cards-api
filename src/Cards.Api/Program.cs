@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using Cards.Api.Data;
 using Cards.Api.Errors;
 using Cards.Api.Options;
@@ -7,7 +8,13 @@ using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddAuthentication().AddJwtBearer();
+builder.Services.AddAuthentication().AddJwtBearer(o =>
+{
+    o.MapInboundClaims = false;
+    o.TokenValidationParameters.NameClaimType = "unique_name";
+    o.TokenValidationParameters.RoleClaimType = "role";
+});
+
 builder.Services.AddAuthorizationBuilder()
     .AddPolicy("CardsAdmin", p => p.RequireRole("admin"));
 
@@ -46,6 +53,16 @@ app.MapGet("/ping", () => new { status = "pong", time = DateTime.UtcNow })
     .WithName("Ping")
     .WithSummary("Liveness check")
     .WithTags("Health");
+
+app.MapGet("/api/me", (ClaimsPrincipal user) => new
+    {
+        name = user.Identity?.Name,
+        isAdmin = user.IsInRole("admin"),
+        claims = user.Claims.Select(c => new { c.Type, c.Value })
+    })
+    .RequireAuthorization()
+    .WithTags("Auth");
+
 app.MapControllers();
 
 app.Run();
