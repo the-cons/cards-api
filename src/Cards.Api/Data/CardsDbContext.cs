@@ -12,7 +12,7 @@ public class CardsDbContext(DbContextOptions<CardsDbContext> options) : DbContex
         {
             e.Property(c => c.Name).HasMaxLength(100);
             e.Property(c => c.Type).HasMaxLength(50);
-            e.HasIndex(c => c.Name);
+            e.HasIndex(c => c.Name).IsUnique();
             
             e.HasData(
                 new CardEntity { Id = 1, Name = "Blue-Eyes White Dragon", Type = "Dragon", Attack = 3000 },

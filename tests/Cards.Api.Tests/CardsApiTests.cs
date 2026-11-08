@@ -66,6 +66,18 @@ public class CardsApiTests : IDisposable
         var problem = await response.Content.ReadFromJsonAsync<ProblemDetails>();
         Assert.Equal("Collection is full", problem?.Title);
     }
+
+    [Fact]
+    public async Task Create_when_name_present_returns_409()
+    {
+        var responseA = await _client.PostAsJsonAsync("/api/cards", new CreateCardRequest($"Some name once", "Normal", 100));
+        Assert.Equal(HttpStatusCode.Created, responseA.StatusCode);
+        
+        var responseB = await _client.PostAsJsonAsync("/api/cards", new CreateCardRequest($"Some name once", "Normal", 100));
+        Assert.Equal(HttpStatusCode.Conflict, responseB.StatusCode);
+        var problem = await responseB.Content.ReadFromJsonAsync<ProblemDetails>();
+        Assert.Equal("Card already exists", problem?.Title);
+    }
     
     [Theory]
     [InlineData("", "Dragon", 1000, "Name")]

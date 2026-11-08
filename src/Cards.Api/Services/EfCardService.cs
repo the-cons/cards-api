@@ -28,12 +28,17 @@ public class EfCardService(CardsDbContext db, IOptions<CardsOptions> options) : 
         var max = options.Value.MaxCollectionSize;
         if (await db.Cards.CountAsync(ct) >= max)
             throw new CollectionFullException(max);
-        
-        var entity = new CardEntity() { Name = request.Name, 
+
+        if (await db.Cards.AnyAsync(c => c.Name == request.Name, ct))
+            throw new DuplicateCardException(request.Name);
+
+        var entity = new CardEntity
+        {
+            Name = request.Name,
             Type = request.Type,
             Attack = request.Attack!.Value
         };
-        
+
         db.Cards.Add(entity);
         await db.SaveChangesAsync(ct);
 
