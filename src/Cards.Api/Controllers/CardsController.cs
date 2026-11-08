@@ -22,6 +22,11 @@ public class CardsController(ICardService cards) : ControllerBase
     public ActionResult<Card> Create(CreateCardRequest request)
     {
         var card = cards.Create(request);
+        if (card is null)
+            return Problem(statusCode: StatusCodes.Status409Conflict, title: "Collection is full");
         return CreatedAtAction(nameof(GetById), new { id = card.Id }, card);
     }
+
+    [HttpDelete(("{id:int}"))]
+    public ActionResult Delete(int id) => cards.Delete(id) ? NoContent() : NotFound();
 }
