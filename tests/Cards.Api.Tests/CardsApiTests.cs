@@ -8,20 +8,29 @@ namespace Cards.Api.Tests;
 public class CardsApiTests : IDisposable
 {
     private readonly CardsApiFactory _factory = new();
-    private readonly HttpClient _client;
+    private readonly HttpClient _anonymous;
+    private readonly HttpClient _user;
+    private readonly HttpClient _admin;
     
-    public CardsApiTests() => _client = _factory.CreateClient();
-    
+    public CardsApiTests()
+    {
+        _anonymous= _factory.CreateClient();
+        _user = _factory.CreateClientAs("alice");
+        _admin = _factory.CreateClientAs("bob", "admin");
+    }
+
     public void Dispose()
     {
-        _client.Dispose();
+        _anonymous.Dispose();
+        _user.Dispose();
+        _admin.Dispose();
         _factory.Dispose();
     }
 
     [Fact]
     public async Task GetAll_returns_seeded_cards()
     {
-        var cards = await _client.GetFromJsonAsync<List<Card>>("/api/cards");
+        var cards = await _anonymous.GetFromJsonAsync<List<Card>>("/api/cards");
         
         Assert.NotNull(cards);
         Assert.Equal(3, cards.Count);
@@ -31,7 +40,7 @@ public class CardsApiTests : IDisposable
     [Fact]
     public async Task GetById_unknown_returns_404()
     {
-        var response = await _client.GetAsync("/api/cards/999");
+        var response = await _anonymous.GetAsync("/api/cards/999");
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
@@ -41,26 +50,26 @@ public class CardsApiTests : IDisposable
     {
         var request = new CreateCardRequest("Red-Eyes Black Dragon", "Dragon", 2400);
 
-        var response = await _client.PostAsJsonAsync("/api/cards", request);
+        var response = await _user.PostAsJsonAsync("/api/cards", request);
 
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
         Assert.NotNull(response.Headers.Location);
 
-        var created = await _client.GetFromJsonAsync<Card>(response.Headers.Location);
+        var created = await _user.GetFromJsonAsync<Card>(response.Headers.Location);
         Assert.Equal("Red-Eyes Black Dragon", created?.Name);
     }
 
     [Fact]
     public async Task Create_when_collection_is_full_returns_409()
     {
-        var existing = (await _client.GetFromJsonAsync<List<Card>>("/api/cards"))!.Count;
+        var existing = (await _user.GetFromJsonAsync<List<Card>>("/api/cards"))!.Count;
         for (var i = existing; i < 5; i++)
         {
-            var fill = await _client.PostAsJsonAsync("/api/cards", new CreateCardRequest($"Filler {i}", "Normal", 100));
+            var fill = await _user.PostAsJsonAsync("/api/cards", new CreateCardRequest($"Filler {i}", "Normal", 100));
             Assert.Equal(HttpStatusCode.Created, fill.StatusCode);
         }
         
-        var response = await _client.PostAsJsonAsync("/api/cards", new CreateCardRequest("One too many", "Normal", 100));
+        var response = await _user.PostAsJsonAsync("/api/cards", new CreateCardRequest("One too many", "Normal", 100));
         
         Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
         var problem = await response.Content.ReadFromJsonAsync<ProblemDetails>();
@@ -70,10 +79,10 @@ public class CardsApiTests : IDisposable
     [Fact]
     public async Task Create_when_name_present_returns_409()
     {
-        var responseA = await _client.PostAsJsonAsync("/api/cards", new CreateCardRequest("Some name once", "Normal", 100));
+        var responseA = await _user.PostAsJsonAsync("/api/cards", new CreateCardRequest("Some name once", "Normal", 100));
         Assert.Equal(HttpStatusCode.Created, responseA.StatusCode);
         
-        var responseB = await _client.PostAsJsonAsync("/api/cards", new CreateCardRequest("Some name once", "Normal", 100));
+        var responseB = await _user.PostAsJsonAsync("/api/cards", new CreateCardRequest("Some name once", "Normal", 100));
         Assert.Equal(HttpStatusCode.Conflict, responseB.StatusCode);
         var problem = await responseB.Content.ReadFromJsonAsync<ProblemDetails>();
         Assert.Equal("Card already exists", problem?.Title);
@@ -85,7 +94,7 @@ public class CardsApiTests : IDisposable
     [InlineData("Valid", "Dragon", null, "Attack")]
     public async Task Create_invalid_card_returns_400(string name, string type, int? attack, string field)
     {
-        var response = await _client.PostAsJsonAsync("/api/cards", new CreateCardRequest(name, type, attack));
+        var response = await _user.PostAsJsonAsync("/api/cards", new CreateCardRequest(name, type, attack));
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
         var problem = await response.Content.ReadFromJsonAsync<ValidationProblemDetails>();
@@ -95,7 +104,7 @@ public class CardsApiTests : IDisposable
     [Fact]
     public async Task Delete_existing_returns_204_then_404()
     {
-        Assert.Equal(HttpStatusCode.NoContent, (await _client.DeleteAsync("/api/cards/1")).StatusCode);
-        Assert.Equal(HttpStatusCode.NotFound,  (await _client.DeleteAsync("/api/cards/1")).StatusCode);
+        Assert.Equal(HttpStatusCode.NoContent, (await _admin.DeleteAsync("/api/cards/1")).StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound,  (await _admin.DeleteAsync("/api/cards/1")).StatusCode);
     }
 }
