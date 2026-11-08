@@ -1,4 +1,5 @@
 using Cards.Api.Data;
+using Cards.Api.Domain;
 using Cards.Api.Models;
 using Cards.Api.Options;
 using Microsoft.EntityFrameworkCore;
@@ -22,14 +23,15 @@ public class EfCardService(CardsDbContext db, IOptions<CardsOptions> options) : 
             .Select(c => new Card(c.Id, c.Name, c.Type, c.Attack))
             .FirstOrDefaultAsync(ct);
 
-    public async Task<Card?> CreateAsync(CreateCardRequest request, CancellationToken ct)
+    public async Task<Card> CreateAsync(CreateCardRequest request, CancellationToken ct)
     {
-        if (await db.Cards.CountAsync(ct) >= options.Value.MaxCollectionSize)
-            return null;
+        var max = options.Value.MaxCollectionSize;
+        if (await db.Cards.CountAsync(ct) >= max)
+            throw new CollectionFullException(max);
         
         var entity = new CardEntity() { Name = request.Name, 
             Type = request.Type,
-            Attack = request.Attack.Value
+            Attack = request.Attack!.Value
         };
         
         db.Cards.Add(entity);

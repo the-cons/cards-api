@@ -23,8 +23,6 @@ public class CardsController(ICardService cards) : ControllerBase
     public async Task<ActionResult<Card>> Create(CreateCardRequest request,  CancellationToken ct)
     {
         var card = await cards.CreateAsync(request, ct);
-        if (card is null)
-            return Problem(statusCode: StatusCodes.Status409Conflict, title: "Collection is full");
         return CreatedAtAction(nameof(GetById), new { id = card.Id }, card);
     }
 

@@ -1,9 +1,13 @@
 using Cards.Api.Data;
+using Cards.Api.Errors;
 using Cards.Api.Options;
 using Cards.Api.Services;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddProblemDetails();
+builder.Services.AddExceptionHandler<DomainExceptionHandler>();
 
 builder.Services.AddDbContext<CardsDbContext>(o =>
     o.UseSqlite(builder.Configuration.GetConnectionString("Cards")));
@@ -16,6 +20,8 @@ builder.Services.AddOptions<CardsOptions>()
     .ValidateOnStart();
 
 var app = builder.Build();
+
+app.UseExceptionHandler();
 
 if (app.Environment.IsDevelopment())
 {
