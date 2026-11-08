@@ -1,5 +1,6 @@
 using Cards.Api.Models;
 using Cards.Api.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Cards.Api.Controllers;
@@ -33,9 +34,11 @@ public class CardsController(ICardService cards) : ControllerBase
     /// <remarks>Card names must be unique. Fails with 409 when the collection is full.</remarks>
     /// <param name="request">The card to create.</param>
     [HttpPost]
+    [Authorize]
     [ProducesResponseType<Card>(StatusCodes.Status201Created)]
     [ProducesResponseType<ValidationProblemDetails>(StatusCodes.Status400BadRequest)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status409Conflict)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<ActionResult<Card>> Create(CreateCardRequest request,  CancellationToken ct)
     {
         var card = await cards.CreateAsync(request, ct);
@@ -48,7 +51,10 @@ public class CardsController(ICardService cards) : ControllerBase
     /// <remarks>ID needs to be in the collection. Fails with 404 if not found.</remarks>
     /// <param name="id">The ID of the requested card.</param>
     [HttpDelete("{id:int}")]
+    [Authorize(Policy = "CardsAdmin")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status404NotFound)]
     public async Task<ActionResult> Delete(int id, CancellationToken ct) => 
         await cards.DeleteAsync(id, ct) ? NoContent() : NotFound();

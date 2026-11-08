@@ -7,6 +7,10 @@ using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddAuthentication().AddJwtBearer();
+builder.Services.AddAuthorizationBuilder()
+    .AddPolicy("CardsAdmin", p => p.RequireRole("admin"));
+
 builder.Services.AddOpenApi();
 
 builder.Services.AddProblemDetails();
@@ -25,6 +29,9 @@ builder.Services.AddOptions<CardsOptions>()
 var app = builder.Build();
 
 app.UseExceptionHandler();
+
+app.UseAuthentication();
+app.UseAuthorization();
 
 if (app.Environment.IsDevelopment())
 {
