@@ -16,11 +16,11 @@ public partial class EfCardService(
     [LoggerMessage(Level = LogLevel.Information, Message = "Created card {CardId} named {CardName}")]
     private static partial void LogCardCreated(ILogger logger, int cardId, string cardName);
 
-    [LoggerMessage(Level = LogLevel.Information, Message = "Card {CardName} already exists")]
+    [LoggerMessage(Level = LogLevel.Warning, Message = "Card {CardName} already exists")]
     private static partial void LogCardDuplicate(ILogger logger, string cardName);
     
-    [LoggerMessage(Level = LogLevel.Information, Message = "Too many cards in collection already exists")]
-    private static partial void LogCardTooMany(ILogger logger);
+    [LoggerMessage(Level = LogLevel.Warning, Message = "Collection full, rejected {CardName} (max {MaxSize})")]
+    private static partial void LogCardTooMany(ILogger logger, string cardName, int maxSize);
     
     public async Task<IReadOnlyList<Card>> GetAllAsync(CancellationToken ct) =>
         await db.Cards
@@ -41,7 +41,7 @@ public partial class EfCardService(
         var max = options.Value.MaxCollectionSize;
         if (await db.Cards.CountAsync(ct) >= max)
         {
-            LogCardTooMany(logger);
+            LogCardTooMany(logger, request.Name, max);
             throw new CollectionFullException(max);
         }
 
@@ -64,7 +64,7 @@ public partial class EfCardService(
             await db.SaveChangesAsync(ct);
             LogCardCreated(logger, entity.Id, entity.Name);
         }
-        catch (DbUpdateException ex) when (ex.InnerException is SqliteException { SqliteErrorCode: 2067 })
+        catch (DbUpdateException ex) when (ex.InnerException is SqliteException { SqliteExtendedErrorCode: 2067 })
         {
             LogCardDuplicate(logger, entity.Name);
             throw new DuplicateCardException(request.Name);
