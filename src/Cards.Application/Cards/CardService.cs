@@ -1,9 +1,13 @@
 using System.Diagnostics;
+using Cards.Application.Diagnostics;
+using Cards.Application.Ports;
 using Cards.Domain;
+using Cards.Domain.Exceptions;
+using Cards.Domain.Models;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace Cards.Application;
+namespace Cards.Application.Cards;
 
 public partial class CardService(
     ICardRepository repository,

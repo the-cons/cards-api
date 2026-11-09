@@ -1,6 +1,7 @@
 using Cards.Domain;
+using Cards.Domain.Models;
 
-namespace Cards.Application;
+namespace Cards.Application.Cards;
 
 public interface ICardService
 {

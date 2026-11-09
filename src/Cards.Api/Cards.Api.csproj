@@ -30,4 +30,8 @@
     <ProjectReference Include="..\Cards.Infrastructure\Cards.Infrastructure.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Errors\" />
+  </ItemGroup>
+
 </Project>

@@ -1,5 +1,8 @@
 using Cards.Application;
+using Cards.Application.Ports;
 using Cards.Domain;
+using Cards.Domain.Exceptions;
+using Cards.Domain.Models;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 

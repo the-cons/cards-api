@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace Cards.Application;
+namespace Cards.Application.Cards;
 
 public class CardsOptions
 {

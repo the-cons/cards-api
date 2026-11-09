@@ -1,4 +1,4 @@
-namespace Cards.Domain;
+namespace Cards.Domain.Exceptions;
 
 public class CollectionFullException(int maxSize)
     : DomainException($"The collection is full (max {maxSize} cards).")

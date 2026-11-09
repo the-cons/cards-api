@@ -1,7 +1,7 @@
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
 
-namespace Cards.Application;
+namespace Cards.Application.Diagnostics;
 
 public static class CardsTelemetry
 {

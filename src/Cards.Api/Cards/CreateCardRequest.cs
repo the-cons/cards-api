@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace Cards.Api.Models;
+namespace Cards.Api.Cards;
 
 public record CreateCardRequest(
     [Required, StringLength(100, MinimumLength = 1)] string Name,

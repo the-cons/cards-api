@@ -1,4 +1,4 @@
-namespace Cards.Domain;
+namespace Cards.Domain.Exceptions;
 
 /// <summary>
 /// A business rule was violated. Expected, not a bug.

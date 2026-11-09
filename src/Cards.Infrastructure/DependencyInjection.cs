@@ -1,4 +1,4 @@
-using Cards.Application;
+using Cards.Application.Ports;
 using Cards.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;

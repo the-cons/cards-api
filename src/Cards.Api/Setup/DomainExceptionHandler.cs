@@ -1,8 +1,8 @@
-using Cards.Domain;
+using Cards.Domain.Exceptions;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Cards.Api.Errors;
+namespace Cards.Api.Setup;
 
 public class DomainExceptionHandler(IProblemDetailsService problemDetails) : IExceptionHandler
 {

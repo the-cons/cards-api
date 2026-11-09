@@ -1,7 +1,8 @@
 using System.Net;
 using System.Net.Http.Json;
-using Cards.Api.Models;
+using Cards.Api.Cards;
 using Cards.Domain;
+using Cards.Domain.Models;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Cards.Api.Tests;

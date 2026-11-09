@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Logging;
 
-namespace Cards.Application;
+namespace Cards.Application.Cards;
 
 public partial class CardService
 {

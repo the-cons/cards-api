@@ -1,4 +1,4 @@
-using Cards.Application;
+using Cards.Application.Diagnostics;
 using OpenTelemetry;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;

@@ -1,6 +1,8 @@
 using Cards.Domain;
+using Cards.Domain.Exceptions;
+using Cards.Domain.Models;
 
-namespace Cards.Application;
+namespace Cards.Application.Ports;
 
 /// <summary>
 /// Persistence port.

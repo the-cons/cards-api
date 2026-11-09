@@ -1,11 +1,10 @@
-using Cards.Api.Models;
 using Cards.Api.Setup;
-using Cards.Application;
-using Cards.Domain;
+using Cards.Application.Cards;
+using Cards.Domain.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Cards.Api.Controllers;
+namespace Cards.Api.Cards;
 
 [ApiController]
 [Route("api/cards")]

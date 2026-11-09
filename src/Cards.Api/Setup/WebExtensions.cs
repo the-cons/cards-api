@@ -1,4 +1,3 @@
-using Cards.Api.Errors;
 using Microsoft.AspNetCore.HttpLogging;
 
 namespace Cards.Api.Setup;
