@@ -3,11 +3,33 @@ using Cards.Api.Data;
 using Cards.Api.Errors;
 using Cards.Api.Options;
 using Cards.Api.Services;
+using Cards.Api.Telemetry;
 using Microsoft.AspNetCore.HttpLogging;
 using Microsoft.EntityFrameworkCore;
+using OpenTelemetry;
+using OpenTelemetry.Metrics;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
 using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddOpenTelemetry()
+    .ConfigureResource(r => r.AddService("cards-api"))
+    .WithTracing(t => t
+        .AddAspNetCoreInstrumentation()
+        .AddEntityFrameworkCoreInstrumentation()
+        .AddSource(CardsTelemetry.Name))
+    .WithMetrics(m => m
+        .AddAspNetCoreInstrumentation()
+        .AddMeter(CardsTelemetry.Name))
+    .UseOtlpExporter();
+
+builder.Logging.AddOpenTelemetry(o =>
+{
+    o.IncludeScopes = true;
+    o.IncludeFormattedMessage = true;
+});
 
 builder.Services.AddAuthentication().AddJwtBearer(o =>
 {

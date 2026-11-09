@@ -1,7 +1,9 @@
+using System.Diagnostics;
 using Cards.Api.Data;
 using Cards.Api.Domain;
 using Cards.Api.Models;
 using Cards.Api.Options;
+using Cards.Api.Telemetry;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -9,7 +11,7 @@ using Microsoft.Extensions.Options;
 namespace Cards.Api.Services;
 
 public partial class EfCardService(
-    CardsDbContext db, 
+    CardsDbContext db,
     IOptions<CardsOptions> options,
     ILogger<EfCardService> logger) : ICardService
 {
@@ -18,10 +20,10 @@ public partial class EfCardService(
 
     [LoggerMessage(Level = LogLevel.Warning, Message = "Card {CardName} already exists")]
     private static partial void LogCardDuplicate(ILogger logger, string cardName);
-    
+
     [LoggerMessage(Level = LogLevel.Warning, Message = "Collection full, rejected {CardName} (max {MaxSize})")]
     private static partial void LogCardTooMany(ILogger logger, string cardName, int maxSize);
-    
+
     public async Task<IReadOnlyList<Card>> GetAllAsync(CancellationToken ct) =>
         await db.Cards
             .AsNoTracking()
@@ -38,16 +40,23 @@ public partial class EfCardService(
 
     public async Task<Card> CreateAsync(CreateCardRequest request, CancellationToken ct)
     {
+        using var activity = CardsTelemetry.ActivitySource.StartActivity("CreateCard");
+        activity?.SetTag("card.name", request.Name);
+
         var max = options.Value.MaxCollectionSize;
         if (await db.Cards.CountAsync(ct) >= max)
         {
             LogCardTooMany(logger, request.Name, max);
+            activity?.SetStatus(ActivityStatusCode.Error, "collection full");
+            CardsTelemetry.CardsRejected.Add(1, new KeyValuePair<string, object?>("reason", "full"));
             throw new CollectionFullException(max);
         }
 
         if (await db.Cards.AnyAsync(c => c.Name == request.Name, ct))
         {
             LogCardDuplicate(logger, request.Name);
+            activity?.SetStatus(ActivityStatusCode.Error, "card already exists");
+            CardsTelemetry.CardsRejected.Add(1, new KeyValuePair<string, object?>("reason", "duplicate"));
             throw new DuplicateCardException(request.Name);
         }
 
@@ -63,10 +72,14 @@ public partial class EfCardService(
         {
             await db.SaveChangesAsync(ct);
             LogCardCreated(logger, entity.Id, entity.Name);
+            CardsTelemetry.CardsCreated.Add(1, new KeyValuePair<string, object?>("card.type", entity.Type));
+            activity?.SetTag("card.id", entity.Id);
         }
         catch (DbUpdateException ex) when (ex.InnerException is SqliteException { SqliteExtendedErrorCode: 2067 })
         {
             LogCardDuplicate(logger, entity.Name);
+            activity?.SetStatus(ActivityStatusCode.Error, "card already exists");
+            CardsTelemetry.CardsRejected.Add(1, new KeyValuePair<string, object?>("reason", "duplicate"));
             throw new DuplicateCardException(request.Name);
         }
 
