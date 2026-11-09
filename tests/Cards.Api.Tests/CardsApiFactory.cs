@@ -18,8 +18,8 @@ public class CardsApiFactory : WebApplicationFactory<Program>
         builder.UseSetting("ConnectionStrings:Cards", $"Data Source={_dbPath}");
         builder.UseSetting("Cards:MaxCollectionSize", "5");
         builder.ConfigureTestServices(services =>
-            services.AddAuthentication(TestAuthHandler.Scheme)
-                .AddScheme<AuthenticationSchemeOptions, TestAuthHandler>(TestAuthHandler.Scheme, _ => { }));
+            services.AddAuthentication(TestAuthHandler.SchemeName)
+                .AddScheme<AuthenticationSchemeOptions, TestAuthHandler>(TestAuthHandler.SchemeName, _ => { }));
     }
 
     public HttpClient CreateClientAs(string user, params string[] roles)
