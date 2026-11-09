@@ -1,10 +1,8 @@
 using System.Security.Claims;
-using Cards.Api.Data;
 using Cards.Api.Errors;
-using Cards.Api.Services;
 using Cards.Application;
+using Cards.Infrastructure;
 using Microsoft.AspNetCore.HttpLogging;
-using Microsoft.EntityFrameworkCore;
 using OpenTelemetry;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
@@ -45,12 +43,11 @@ builder.Services.AddOpenApi();
 builder.Services.AddProblemDetails();
 builder.Services.AddExceptionHandler<DomainExceptionHandler>();
 
-builder.Services.AddDbContext<CardsDbContext>(o =>
-    o.UseSqlite(builder.Configuration.GetConnectionString("Cards")));
+builder.Services.AddCardsInfrastructure(builder.Configuration);
+builder.Services.AddScoped<ICardService, CardService>();
 
 builder.Services.AddControllers();
-builder.Services.AddScoped<ICardService, CardService>();
-builder.Services.AddScoped<ICardRepository, EfCardRepository>();
+
 builder.Services.AddOptions<CardsOptions>()
     .BindConfiguration(CardsOptions.Section)
     .ValidateDataAnnotations()
@@ -85,10 +82,7 @@ app.Use(async (context, next) =>
 app.UseAuthorization();
 
 if (app.Environment.IsDevelopment() || app.Configuration.GetValue<bool>("Database:MigrateOnStartup"))
-{
-    using var scope = app.Services.CreateScope();
-    scope.ServiceProvider.GetRequiredService<CardsDbContext>().Database.Migrate();
-}
+    await app.Services.MigrateCardsDatabaseAsync();
 
 if (app.Environment.IsDevelopment())
 {

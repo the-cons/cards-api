@@ -1,12 +1,11 @@
-using Cards.Api.Data;
 using Cards.Application;
 using Cards.Domain;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 
-namespace Cards.Api.Services;
+namespace Cards.Infrastructure.Persistence;
 
-public class EfCardRepository(CardsDbContext db) : ICardRepository
+internal class EfCardRepository(CardsDbContext db) : ICardRepository
 {
     public async Task<IReadOnlyList<Card>> GetAllAsync(CancellationToken ct) =>
         await db.Cards

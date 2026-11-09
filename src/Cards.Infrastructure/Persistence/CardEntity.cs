@@ -1,6 +1,6 @@
-namespace Cards.Api.Data;
+namespace Cards.Infrastructure.Persistence;
 
-public class CardEntity
+internal class CardEntity
 {
     public int Id { get; set; }
     public required string Name { get; set; }

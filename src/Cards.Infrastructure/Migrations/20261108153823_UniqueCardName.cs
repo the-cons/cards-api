@@ -2,7 +2,7 @@
 
 #nullable disable
 
-namespace Cards.Api.Migrations
+namespace Cards.Infrastructure.Migrations
 {
     /// <inheritdoc />
     public partial class UniqueCardName : Migration

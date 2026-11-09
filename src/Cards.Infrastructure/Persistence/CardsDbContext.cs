@@ -1,8 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 
-namespace Cards.Api.Data;
+namespace Cards.Infrastructure.Persistence;
 
-public class CardsDbContext(DbContextOptions<CardsDbContext> options) : DbContext(options)
+internal class CardsDbContext(DbContextOptions<CardsDbContext> options) : DbContext(options)
 {
     public DbSet<CardEntity> Cards => Set<CardEntity>();
 
