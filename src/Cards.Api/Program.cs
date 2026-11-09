@@ -3,6 +3,7 @@ using Cards.Api.Data;
 using Cards.Api.Errors;
 using Cards.Api.Options;
 using Cards.Api.Services;
+using Microsoft.AspNetCore.HttpLogging;
 using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
 
@@ -33,11 +34,32 @@ builder.Services.AddOptions<CardsOptions>()
     .ValidateDataAnnotations()
     .ValidateOnStart();
 
+builder.Services.AddHttpLogging(o =>
+{
+    o.LoggingFields = HttpLoggingFields.RequestMethod | HttpLoggingFields.RequestPath
+                                                      | HttpLoggingFields.ResponseStatusCode | HttpLoggingFields.Duration;
+    o.CombineLogs = true;   // one log line per request instead of separate request and response lines
+});
+
 var app = builder.Build();
 
+app.UseHttpLogging();
 app.UseExceptionHandler();
 
 app.UseAuthentication();
+
+app.Use(async (context, next) =>
+{
+    var logger = context.RequestServices.GetRequiredService<ILogger<Program>>();
+    using (logger.BeginScope(new Dictionary<string, object>
+           {
+               ["User"] = context.User.Identity?.Name ?? "anonymous"
+           }))
+    {
+        await next(context);   // ≈ chain.doFilter(request, response)
+    }
+});
+
 app.UseAuthorization();
 
 if (app.Environment.IsDevelopment())
