@@ -1,6 +1,6 @@
 using System.Diagnostics;
 using Cards.Domain;
-using Microsoft.Extensions.Logging;     // ← must be explicit here, see below
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace Cards.Application;
@@ -21,31 +21,19 @@ public partial class CardService(
 
         var max = options.Value.MaxCollectionSize;
         if (await repository.CountAsync(ct) >= max)
-        {
-            LogCardTooMany(logger, command.Name, max);
-            activity?.SetStatus(ActivityStatusCode.Error, "collection full");
-            CardsTelemetry.CardsRejected.Add(1, new KeyValuePair<string, object?>("reason", "full"));
-            throw new CollectionFullException(max);
-        }
+            throw Reject(activity, command.Name, "full", new CollectionFullException(max));
 
         if (await repository.ExistsByNameAsync(command.Name, ct))
-        {
-            LogCardDuplicate(logger, command.Name);
-            activity?.SetStatus(ActivityStatusCode.Error, "card already exists");
-            CardsTelemetry.CardsRejected.Add(1, new KeyValuePair<string, object?>("reason", "duplicate"));
-            throw new DuplicateCardException(command.Name);
-        }
+            throw Reject(activity, command.Name, "duplicate", new DuplicateCardException(command.Name));
 
         Card card;
         try
         {
             card = await repository.AddAsync(command.Name, command.Type, command.Attack, ct);
         }
-        catch (DuplicateCardException)   // lost the race: the repository translated the DB error for us
+        catch (DuplicateCardException ex)   // lost the race: the repository translated the DB error
         {
-            LogCardDuplicate(logger, command.Name);
-            activity?.SetStatus(ActivityStatusCode.Error, "card already exists");
-            CardsTelemetry.CardsRejected.Add(1, new KeyValuePair<string, object?>("reason", "duplicate"));
+            Reject(activity, command.Name, "duplicate", ex);
             throw;
         }
 
@@ -53,14 +41,13 @@ public partial class CardService(
         CardsTelemetry.CardsCreated.Add(1, new KeyValuePair<string, object?>("card.type", card.Type));
         activity?.SetTag("card.id", card.Id);
         return card;
+    } 
+    
+    private DomainException Reject(Activity? activity, string cardName, string reason, DomainException exception)
+    {
+        LogCardRejected(logger, cardName, reason, exception.Message);
+        activity?.SetStatus(ActivityStatusCode.Error, reason);
+        CardsTelemetry.CardsRejected.Add(1, new KeyValuePair<string, object?>("reason", reason));
+        return exception;
     }
-
-    [LoggerMessage(Level = LogLevel.Information, Message = "Created card {CardId} named {CardName}")]
-    private static partial void LogCardCreated(ILogger logger, int cardId, string cardName);
-
-    [LoggerMessage(Level = LogLevel.Warning, Message = "Card {CardName} already exists")]
-    private static partial void LogCardDuplicate(ILogger logger, string cardName);
-
-    [LoggerMessage(Level = LogLevel.Warning, Message = "Collection full, rejected {CardName} (max {MaxSize})")]
-    private static partial void LogCardTooMany(ILogger logger, string cardName, int maxSize);
 }
