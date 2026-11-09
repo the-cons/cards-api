@@ -1,9 +1,8 @@
 using System.Security.Claims;
 using Cards.Api.Data;
 using Cards.Api.Errors;
-using Cards.Api.Options;
 using Cards.Api.Services;
-using Cards.Api.Telemetry;
+using Cards.Application;
 using Microsoft.AspNetCore.HttpLogging;
 using Microsoft.EntityFrameworkCore;
 using OpenTelemetry;
@@ -50,7 +49,8 @@ builder.Services.AddDbContext<CardsDbContext>(o =>
     o.UseSqlite(builder.Configuration.GetConnectionString("Cards")));
 
 builder.Services.AddControllers();
-builder.Services.AddScoped<ICardService, EfCardService>();
+builder.Services.AddScoped<ICardService, CardService>();
+builder.Services.AddScoped<ICardRepository, EfCardRepository>();
 builder.Services.AddOptions<CardsOptions>()
     .BindConfiguration(CardsOptions.Section)
     .ValidateDataAnnotations()

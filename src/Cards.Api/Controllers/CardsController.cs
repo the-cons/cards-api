@@ -1,5 +1,5 @@
 using Cards.Api.Models;
-using Cards.Api.Services;
+using Cards.Application;
 using Cards.Domain;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -14,7 +14,7 @@ public class CardsController(ICardService cards) : ControllerBase
     /// Lists all cards in the collection.
     /// </summary>
     [HttpGet]
-    public async Task<IReadOnlyList<Card>> GetAll(CancellationToken ct) => 
+    public async Task<IReadOnlyList<Card>> GetAll(CancellationToken ct) =>
         await cards.GetAllAsync(ct);
 
     /// <summary>
@@ -40,9 +40,11 @@ public class CardsController(ICardService cards) : ControllerBase
     [ProducesResponseType<ValidationProblemDetails>(StatusCodes.Status400BadRequest)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status409Conflict)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    public async Task<ActionResult<Card>> Create(CreateCardRequest request,  CancellationToken ct)
+    public async Task<ActionResult<Card>> Create(CreateCardRequest request, CancellationToken ct)
     {
-        var card = await cards.CreateAsync(request, ct);
+        var card = await cards.CreateAsync(
+            new CreateCardCommand(request.Name, request.Type, request.Attack!.Value),
+            ct);
         return CreatedAtAction(nameof(GetById), new { id = card.Id }, card);
     }
 
@@ -57,6 +59,6 @@ public class CardsController(ICardService cards) : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult> Delete(int id, CancellationToken ct) => 
+    public async Task<ActionResult> Delete(int id, CancellationToken ct) =>
         await cards.DeleteAsync(id, ct) ? NoContent() : NotFound();
 }

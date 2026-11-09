@@ -1,7 +1,7 @@
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
 
-namespace Cards.Api.Telemetry;
+namespace Cards.Application;
 
 public static class CardsTelemetry
 {
@@ -12,7 +12,7 @@ public static class CardsTelemetry
 
     public static readonly Counter<long> CardsCreated =
         Meter.CreateCounter<long>("cards.created", unit: "{card}", description: "Cards added to the collection");
-    
+
     public static readonly Counter<long> CardsRejected =
         Meter.CreateCounter<long>("cards.rejected", unit: "{card}", description: "Cards that could not be added");
 }
