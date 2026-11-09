@@ -1,4 +1,5 @@
 using Cards.Api.Models;
+using Cards.Api.Setup;
 using Cards.Application;
 using Cards.Domain;
 using Microsoft.AspNetCore.Authorization;
@@ -54,7 +55,7 @@ public class CardsController(ICardService cards) : ControllerBase
     /// <remarks>ID needs to be in the collection. Fails with 404 if not found.</remarks>
     /// <param name="id">The ID of the requested card.</param>
     [HttpDelete("{id:int}")]
-    [Authorize(Policy = "CardsAdmin")]
+    [Authorize(Policy = AuthExtensions.AdminPolicy)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
