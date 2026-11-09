@@ -1,4 +1,5 @@
 using Cards.Api.Models;
+using Cards.Domain;
 
 namespace Cards.Api.Services;
 

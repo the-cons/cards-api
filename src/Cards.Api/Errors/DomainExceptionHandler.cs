@@ -1,4 +1,4 @@
-using Cards.Api.Domain;
+using Cards.Domain;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 

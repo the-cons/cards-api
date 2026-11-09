@@ -1,5 +1,6 @@
 using Cards.Api.Models;
 using Cards.Api.Services;
+using Cards.Domain;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 

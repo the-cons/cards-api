@@ -1,9 +1,9 @@
 using System.Diagnostics;
 using Cards.Api.Data;
-using Cards.Api.Domain;
 using Cards.Api.Models;
 using Cards.Api.Options;
 using Cards.Api.Telemetry;
+using Cards.Domain;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;

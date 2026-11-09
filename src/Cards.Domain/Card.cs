@@ -1,3 +1,3 @@
-namespace Cards.Api.Models;
+namespace Cards.Domain;
 
 public record Card(int Id, string Name, string Type, int Attack);
