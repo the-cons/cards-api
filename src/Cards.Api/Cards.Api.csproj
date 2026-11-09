@@ -8,8 +8,10 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <NoWarn>$(NoWarn);CS1591;CS1573</NoWarn>
     <UserSecretsId>185dd21b-bf57-4a09-bee3-097651d509f9</UserSecretsId>
+    
+    <StaticWebAssetsEnabled>false</StaticWebAssetsEnabled>
   </PropertyGroup>
 
   <ItemGroup>
